@@ -6,28 +6,54 @@ function calculateBMR(gender, weightKg, heightCm, ageYears) {
   return gender === 'male' ? base + 5 : base - 161;
 }
 
-function adjustForGoal(calories, goal) {
-  // Lose weight: -500 kcal/day (~0.5 kg/week)
-  // Maintain weight: no change
-  // Gain weight: +500 kcal/day (~0.5 kg/week)
-  if (goal === 'lose') return calories - 500;
-  if (goal === 'gain') return calories + 500;
-  return calories;
+function adjustForGoal(maintenanceCalories, goal, gender, weightKg) {
+  // Safety: minimum calorie safeguards
+  const minCalories = gender === 'male' ? 1500 : 1200;
+  
+  if (goal === 'maintain') {
+    return Math.max(maintenanceCalories, minCalories);
+  }
+  
+  if (goal === 'lose') {
+    // Maximum deficit: 750 kcal/day OR 1% of bodyweight/week
+    // 1% bodyweight/week ≈ weightKg * 0.01 * 7700 kcal / 7 days
+    const maxDeficitByWeight = (weightKg * 0.01 * 7700) / 7;
+    const maxDeficit = Math.min(750, maxDeficitByWeight);
+    const targetCalories = maintenanceCalories - maxDeficit;
+    
+    return Math.max(targetCalories, minCalories);
+  }
+  
+  if (goal === 'gain') {
+    // +500 kcal/day (~0.5 kg/week)
+    return maintenanceCalories + 500;
+  }
+  
+  return maintenanceCalories;
 }
 
-function calculateMacros(totalCalories) {
-  // Protein: 30% (4 kcal/g)
-  // Fat: 25% (9 kcal/g)
-  // Carbs: 45% (4 kcal/g)
-  const proteinCal = totalCalories * 0.30;
+function calculateMacros(totalCalories, weightKg, activity) {
+  // Protein by body weight for active people: 1.6–2.2 g/kg
+  // Use higher end (2.0 g/kg) for very active/extremely active
+  let proteinGramsPerKg = 1.6;
+  if (activity >= 1.725) {
+    proteinGramsPerKg = 2.0;
+  } else if (activity >= 1.55) {
+    proteinGramsPerKg = 1.8;
+  }
+  
+  const protein = Math.round(weightKg * proteinGramsPerKg);  // grams
+  const proteinCal = protein * 4;
+  
+  // Fat: 25% of total calories (9 kcal/g)
   const fatCal = totalCalories * 0.25;
-  const carbsCal = totalCalories * 0.45;
+  const fat = Math.round(fatCal / 9);  // grams
+  
+  // Carbs: remaining calories (4 kcal/g)
+  const carbsCal = totalCalories - proteinCal - fatCal;
+  const carbs = Math.round(Math.max(0, carbsCal) / 4);  // grams
 
-  return {
-    protein: Math.round(proteinCal / 4),  // grams
-    fat: Math.round(fatCal / 9),          // grams
-    carbs: Math.round(carbsCal / 4)       // grams
-  };
+  return { protein, fat, carbs };
 }
 
 function parseNumber(value) {
@@ -51,9 +77,9 @@ function onCalculateClick() {
 
   const bmr = calculateBMR(gender, weight, height, age);
   const maintenanceCalories = bmr * activity;
-  const targetCalories = adjustForGoal(maintenanceCalories, goal);
+  const targetCalories = adjustForGoal(maintenanceCalories, goal, gender, weight);
   const calories = Math.round(targetCalories);
-  const macros = calculateMacros(calories);
+  const macros = calculateMacros(calories, weight, activity);
 
   const resultBox = document.getElementById('result');
   document.getElementById('caloriesOut').textContent = `${calories} kcal`;
@@ -64,7 +90,11 @@ function onCalculateClick() {
   document.getElementById('bmrOut').textContent = `BMR: ${Math.round(bmr)} kcal/day`;
   document.getElementById('activityOut').textContent = `Activity: ×${activity}`;
   
-  const goalLabels = { lose: 'Lose Weight (-500 kcal)', maintain: 'Maintain Weight', gain: 'Gain Weight (+500 kcal)' };
+  const goalLabels = { 
+    lose: 'Lose Weight (safe deficit)', 
+    maintain: 'Maintain Weight', 
+    gain: 'Gain Weight (+500 kcal)' 
+  };
   document.getElementById('goalOut').textContent = `Goal: ${goalLabels[goal]}`;
   
   resultBox.hidden = false;
