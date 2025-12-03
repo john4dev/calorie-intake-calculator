@@ -6,30 +6,35 @@ function calculateBMR(gender, weightKg, heightCm, ageYears) {
   return gender === 'male' ? base + 5 : base - 161;
 }
 
-function adjustForGoal(maintenanceCalories, goal, gender, weightKg) {
-  // Safety: minimum calorie safeguards
-  const minCalories = gender === 'male' ? 1500 : 1200;
-  
-  if (goal === 'maintain') {
-    return Math.max(maintenanceCalories, minCalories);
-  }
+function adjustForGoal(maintenanceCalories, goal, gender, weightKg, bmr) {
+  // Step 1: Apply goal adjustment (±500 kcal - standard and safe)
+  let goalCalories = maintenanceCalories;
   
   if (goal === 'lose') {
-    // Maximum deficit: 750 kcal/day OR 1% of bodyweight/week
-    // 1% bodyweight/week ≈ weightKg * 0.01 * 7700 kcal / 7 days
-    const maxDeficitByWeight = (weightKg * 0.01 * 7700) / 7;
-    const maxDeficit = Math.min(750, maxDeficitByWeight);
-    const targetCalories = maintenanceCalories - maxDeficit;
-    
-    return Math.max(targetCalories, minCalories);
+    goalCalories = maintenanceCalories - 500;
+  } else if (goal === 'gain') {
+    goalCalories = maintenanceCalories + 500;
+  }
+  // goal === 'maintain' → no change
+  
+  // Step 2A: Apply BMR × 1.2 minimum (best practice for metabolic safety)
+  // This ensures we never recommend below minimum energy for daily functioning
+  const minimumSafeCalories = bmr * 1.2;
+  if (goalCalories < minimumSafeCalories) {
+    goalCalories = minimumSafeCalories;
   }
   
-  if (goal === 'gain') {
-    // +500 kcal/day (~0.5 kg/week)
-    return maintenanceCalories + 500;
+  // Step 2B: Apply absolute minimums (industry-standard fallback)
+  // Protects edge cases: shorter users, low weight, very low BMR
+  if (gender === 'female' && goalCalories < 1200) {
+    goalCalories = 1200;
   }
   
-  return maintenanceCalories;
+  if (gender === 'male' && goalCalories < 1500) {
+    goalCalories = 1500;
+  }
+  
+  return goalCalories;
 }
 
 function calculateMacros(totalCalories, weightKg, activity) {
@@ -77,7 +82,7 @@ function onCalculateClick() {
 
   const bmr = calculateBMR(gender, weight, height, age);
   const maintenanceCalories = bmr * activity;
-  const targetCalories = adjustForGoal(maintenanceCalories, goal, gender, weight);
+  const targetCalories = adjustForGoal(maintenanceCalories, goal, gender, weight, bmr);
   const calories = Math.round(targetCalories);
   const macros = calculateMacros(calories, weight, activity);
 

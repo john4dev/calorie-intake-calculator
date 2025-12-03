@@ -8,12 +8,15 @@ A single-page app that estimates daily calorie intake and macronutrient targets 
   - Male: `10*kg + 6.25*cm - 5*years + 5`
   - Female: `10*kg + 6.25*cm - 5*years - 161`
 - **Adjusts for goal with safety limits**:
-  - **Lose weight**: Safe deficit capped at **750 kcal/day** OR **1% of bodyweight/week** (whichever is smaller)
+  - **Lose weight**: -500 kcal/day (~0.5 kg/week)
   - **Maintain weight**: No change
   - **Gain weight**: +500 kcal/day (~0.5 kg/week)
-  - **Minimum calorie safeguards**:
-    - Women: ≥1,200 kcal/day
-    - Men: ≥1,500 kcal/day
+  - **Safety checks applied in this order**:
+    1. Apply goal adjustment (±500 kcal)
+    2. **BMR × 1.2 minimum** (ensures metabolic safety)
+    3. **Absolute minimums** (industry-standard fallback):
+       - Women: ≥1,200 kcal/day
+       - Men: ≥1,500 kcal/day
 - **Shows recommended intake**:
   - **Calories** (rounded total with safety limits applied)
   - **Protein** (body weight–based: 1.6–2.2 g/kg depending on activity)
@@ -25,15 +28,27 @@ A single-page app that estimates daily calorie intake and macronutrient targets 
 
 ## Safety Features
 
-### A. Minimum Calorie Safeguards
-Prevents dangerously low calorie recommendations:
+### Safety Check Order (Industry Best Practice)
+The app applies safety checks in the correct order:
+
+1. **Apply goal adjustment**: ±500 kcal (standard and safe)
+2. **Apply BMR × 1.2 minimum**: Ensures you never go below minimum energy for normal daily functioning
+3. **Apply absolute minimums**: Final fail-safe for edge cases
+
+### A. BMR × 1.2 Minimum (Metabolic Safety)
+Formula: `minimumSafeCalories = BMR × 1.2`
+
+This is the **primary safety floor**. BMR × 1.2 represents the minimum energy needed for:
+- Basic metabolic functions
+- Light daily activities (walking, sitting, basic tasks)
+- Normal bodily functions
+
+Usually lands above the absolute minimums but provides personalized protection based on individual BMR.
+
+### B. Absolute Minimums (Industry-Standard Fallback)
+Final fail-safe for edge cases (shorter users, low weight, very low BMR):
 - **1,200 kcal/day for women**
 - **1,500 kcal/day for men**
-
-### B. Maximum Weight-Loss Rate Limit
-Deficit recommendation capped at the **lesser of**:
-- **750 kcal/day**, OR
-- **1% of bodyweight/week** (calculated as: `weightKg × 0.01 × 7700 kcal ÷ 7 days`)
 
 ### C. Protein by Body Weight
 Instead of percentage-based protein, uses evidence-based recommendations:
