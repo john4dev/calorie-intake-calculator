@@ -81,12 +81,13 @@ function saveInputs() {
 
 function loadInputs() {
   const saved = localStorage.getItem('calorieCalcInputs');
-  if (!saved) return;
+  if (!saved) return false;
   const data = JSON.parse(saved);
   for (const key in data) {
     const el = document.getElementById(key);
     if (el) el.value = data[key];
   }
+  return true;
 }
 
 function onCalculateClick() {
@@ -132,5 +133,10 @@ function onCalculateClick() {
 }
 
 document.getElementById('calculate').addEventListener('click', onCalculateClick);
-// Load saved inputs on page load
-document.addEventListener('DOMContentLoaded', loadInputs);
+// Load saved inputs on page load and auto-calculate if available
+document.addEventListener('DOMContentLoaded', () => {
+  const hadSaved = loadInputs();
+  if (hadSaved) {
+    onCalculateClick();
+  }
+});
