@@ -13,7 +13,7 @@
 
       <div class="grid">
         <label class="field">
-          <span>Gender</span>
+          <span>Sex</span>
           <select id="gender">
             <option value="male">Male</option>
             <option value="female">Female</option>
@@ -38,11 +38,20 @@
         <label class="field">
           <span>Activity</span>
           <select id="activity">
-            <option value="1.2">Sedentary (1.2)</option>
-            <option value="1.375">Light (1.375)</option>
-            <option value="1.55">Moderate (1.55)</option>
-            <option value="1.725">Active (1.725)</option>
-            <option value="1.9">Very Active (1.9)</option>
+            <option value="1.2">Sedentary</option>
+            <option value="1.375">Lightly Active</option>
+            <option value="1.55">Moderately Active</option>
+            <option value="1.725">Very Active</option>
+            <option value="1.9">Extremely Active</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Goal</span>
+          <select id="goal">
+            <option value="lose">Lose Weight</option>
+            <option value="maintain">Maintain Weight</option>
+            <option value="gain">Gain Weight</option>
           </select>
         </label>
       </div>
@@ -50,11 +59,29 @@
       <button id="calculate" class="btn">Calculate</button>
 
       <div id="result" class="result" hidden>
-        <h2>Estimated daily calories</h2>
-        <p id="caloriesOut" class="calories"></p>
+        <h2>Recommended Daily Intake</h2>
+        <div class="macros-grid">
+          <div class="macro-card">
+            <span class="macro-label">Calories</span>
+            <span id="caloriesOut" class="macro-value"></span>
+          </div>
+          <div class="macro-card">
+            <span class="macro-label">Protein</span>
+            <span id="proteinOut" class="macro-value"></span>
+          </div>
+          <div class="macro-card">
+            <span class="macro-label">Fat</span>
+            <span id="fatOut" class="macro-value"></span>
+          </div>
+          <div class="macro-card">
+            <span class="macro-label">Carbs</span>
+            <span id="carbsOut" class="macro-value"></span>
+          </div>
+        </div>
         <p class="details">
           <span id="bmrOut"></span>
           <span id="activityOut"></span>
+          <span id="goalOut"></span>
         </p>
       </div>
     </section>
