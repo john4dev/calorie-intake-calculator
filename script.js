@@ -66,6 +66,29 @@ function parseNumber(value) {
   return Number.isFinite(n) ? n : NaN;
 }
 
+// Persist and restore inputs using localStorage
+function saveInputs() {
+  const inputs = {
+    gender: document.getElementById('gender').value,
+    age: document.getElementById('age').value,
+    weight: document.getElementById('weight').value,
+    height: document.getElementById('height').value,
+    activity: document.getElementById('activity').value,
+    goal: document.getElementById('goal').value
+  };
+  localStorage.setItem('calorieCalcInputs', JSON.stringify(inputs));
+}
+
+function loadInputs() {
+  const saved = localStorage.getItem('calorieCalcInputs');
+  if (!saved) return;
+  const data = JSON.parse(saved);
+  for (const key in data) {
+    const el = document.getElementById(key);
+    if (el) el.value = data[key];
+  }
+}
+
 function onCalculateClick() {
   const gender = document.getElementById('gender').value;
   const age = parseNumber(document.getElementById('age').value);
@@ -73,6 +96,9 @@ function onCalculateClick() {
   const height = parseNumber(document.getElementById('height').value);
   const activity = parseNumber(document.getElementById('activity').value);
   const goal = document.getElementById('goal').value;
+
+  // Save current inputs
+  saveInputs();
 
   // Quick validation: age, weight, height must be truthy and valid numbers
   if (!age || !weight || !height || Number.isNaN(activity)) {
@@ -106,3 +132,5 @@ function onCalculateClick() {
 }
 
 document.getElementById('calculate').addEventListener('click', onCalculateClick);
+// Load saved inputs on page load
+document.addEventListener('DOMContentLoaded', loadInputs);
